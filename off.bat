@@ -1,28 +1,31 @@
 @echo off
 if "%1" NEQ "" (goto run)
+chcp 866 > nul
 echo Числа 1-9 выключение в часах.
 echo Всё, что больше 9 выключение в минутах.
 echo Ноль или любой текст отменяет таймер.
 
-set x=""
-set /p x="Выключение через: "
+set sum_sec=""
+set /p sum_sec="Выключение через: "
 
-if %x% LEQ 9 (set/A x*=3600) else (set/A x*=60)
+if %sum_sec% LEQ 9 (set/A sum_sec*=3600) else (set/A sum_sec*=60)
 
 :run
+setlocal enabledelayedexpansion
+if not defined sum_sec (set sum_sec=0)
 
-if not defined x (set x=0)
+for %%A in (%*) do (
+    if "!next_param!" equ "hour" (set /a sum_sec=!sum_sec! + %%A * 3600)
+	if "!next_param!" equ "minute" (set /a sum_sec=!sum_sec! + %%A * 60)
+	if "!next_param!" equ "second" (set /a sum_sec=!sum_sec! + %%A)
+	
+	if "%%A" equ "-h" (
+		set next_param=hour
+	) else if "%%A" equ "-m" (
+		set next_param=minute
+	) else if "%%A" equ "-s" (
+		set next_param=second
+	) else (set next_param=none)
+)
 
-if "%1" == "-h" (set/A x=%2 * 3600 + %x%)
-if "%1" == "-m" (set/A x=%2 * 60 + %x%)
-if "%1" == "-s" (set/A x=%2 + %x%)
-
-if "%3" == "-h" (set/A x=%4 * 3600 + %x%)
-if "%3" == "-m" (set/A x=%4 * 60 + %x%)
-if "%3" == "-s" (set/A x=%4 + %x%)
-
-if "%5" == "-h" (set/A x=%6 * 3600 + %x%)
-if "%5" == "-m" (set/A x=%6 * 60 + %x%)
-if "%5" == "-s" (set/A x=%6 + %x%)
-
-if %x% NEQ 0 (shutdown -s -t %x%) else (shutdown -a)
+if %sum_sec% NEQ 0 (shutdown -s -t %sum_sec%) else (shutdown -a)
