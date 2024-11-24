@@ -5,14 +5,15 @@ echo Числа 1-9 выключение в часах.
 echo Всё, что больше 9 выключение в минутах.
 echo Ноль или любой текст отменяет таймер.
 
-set sum_sec=""
 set /p sum_sec="Выключение через: "
 
 if %sum_sec% LEQ 9 (set/A sum_sec*=3600) else (set/A sum_sec*=60)
+goto fin
 
 :run
 setlocal enabledelayedexpansion
-if not defined sum_sec (set sum_sec=0)
+set sum_sec=0
+if "%2" equ "" (goto fin)
 
 for %%A in (%*) do (
     if "!next_param!" equ "hour" (set /a sum_sec=!sum_sec! + %%A * 3600)
@@ -27,5 +28,7 @@ for %%A in (%*) do (
 		set next_param=second
 	) else (set next_param=none)
 )
+
+:fin
 
 if %sum_sec% NEQ 0 (shutdown -s -t %sum_sec%) else (shutdown -a)
